@@ -11,24 +11,13 @@ RUN go mod download
 # Copy the entire project directory to the container
 COPY . .
 
-# Build the rotate binary for efficiency
-RUN go build -o rotate ./rotate
+RUN ls -la /app
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+# Build the application
+RUN go build -o rotate .
 
-# Copy the crontab file to the cron directory
-COPY rotate_crontab /etc/cron.d/rotate_crontab
+# set file permission
+RUN chmod +x rotate
 
-# Copy the script that will run the rotate commands
-COPY rotate_script.sh /rotate_script.sh
-RUN chmod +x /rotate_script.sh
-
-# Give execution rights on the cron job file
-RUN chmod 0644 /etc/cron.d/rotate_crontab
-
-# Apply the cron job
-RUN crontab /etc/cron.d/rotate_crontab
-
-# Start the cron service and keep the container running
-CMD cron && tail -f /dev/null
+# Start the application
+CMD ["./rotate"]

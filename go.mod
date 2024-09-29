@@ -1,6 +1,6 @@
 module github.com/einys/cmsn-bot-rotator
 
-go 1.22.6
+go 1.20
 
 require go.mongodb.org/mongo-driver v1.17.0
 
