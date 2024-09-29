@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  rotate-cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rotate-cron-service
+    restart: always
+    env_file:
+      - .env
