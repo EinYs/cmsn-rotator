@@ -1,1 +1,1 @@
-docker-compose up -d --build
+docker build -t rotate . && docker stack deploy -c docker-compose.yml rotate
