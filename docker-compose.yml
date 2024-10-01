@@ -3,7 +3,6 @@ version: '3.8'
 services:
   main:
     image: rotate
-    restart: always
     logging:
       driver: "fluentd"
       options:

@@ -10,34 +10,10 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-func main() {
-	// 프로그램 종료 신호 수신 (CTRL+C 등)
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-
-	go scheduleRotations() // 주기적 작업 스케줄러 시작
-
-	log.Println("😄 Rotate service is running... Press Ctrl+C to exit.")
-	<-stop // 프로그램이 종료될 때까지 대기
-
-	log.Println("Shutting down...")
-}
-
-// 특정 시간 간격마다 작업을 실행하도록 하는 함수
-func scheduleRotations() {
-	ticker := time.NewTicker(8 * time.Hour)
-	defer ticker.Stop()
-
-	for t := range ticker.C {
-		jobID := int((t.Unix()/10)%3 + 1) // 1, 2, 3 중 하나의 작업 ID 선택
-		log.Printf("🔔 Triggering rotation job %d at %v\n", jobID, t)
-		rotate(jobID)
-	}
-}
 
 var dbClient *mongo.Client
 
@@ -147,4 +123,70 @@ func rotate(args int) {
 	} else {
 		log.Println("🎉 Transaction completed successfully.")
 	}
+}
+
+type Token struct {
+	ObjectID primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Auth     string             `bson:"auth,omitempty" json:"auth,omitempty"`
+	Ct0      string             `bson:"ct0,omitempty" json:"ct0,omitempty"`
+	Username string             `bson:"username,omitempty" json:"username,omitempty"`
+	Batch    int                `bson:"batch,omitempty" json:"batch,omitempty"`
+	Active   bool               `bson:"active,omitempty" json:"active,omitempty"`
+}
+
+func main() {
+	// 프로그램 종료 신호 수신 (CTRL+C 등)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	go scheduleRotations() // 주기적 작업 스케줄러 시작
+
+	log.Println("😄 Rotate service is running... Press Ctrl+C to exit.")
+	<-stop // 프로그램이 종료될 때까지 대기
+
+	log.Println("Shutting down...")
+}
+
+// 특정 시간 간격마다 작업을 실행하도록 하는 함수
+func scheduleRotations() {
+	ticker := time.NewTicker(8 * time.Second)
+	defer ticker.Stop()
+
+	// for t := range ticker.C {
+	// 	jobID := int((t.Unix()/10)%3 + 1) // 1, 2, 3 중 하나의 작업 ID 선택
+	// 	log.Printf("🔔 Triggering rotation job %d at %v\n", jobID, t)
+	// 	rotate(jobID)
+	// }
+
+	for range ticker.C {
+
+		// 현재 active: true인 batch 번호를 database에서 가져옴
+		var token *Token
+		collection := dbClient.Database("twitter").Collection("tokens")
+		err := collection.FindOne(context.Background(), bson.M{"active": true}).Decode(&token)
+
+		if err != nil {
+			log.Fatalf("Failed to get current batch number: %v", err)
+		}
+
+		batchNumber := token.Batch
+
+		// check null
+		if batchNumber == 0 {
+			log.Printf("❌ Failed to get current batch number: %v", err)
+		}
+
+		if batchNumber < 1 {
+			log.Printf("❌ Invalid batch number: %d", batchNumber)
+		}
+
+		log.Printf("📃 Current batch number: %d", batchNumber)
+
+		// 현재의 batch 번호에서 1 증가시키고 3을 초과하면 1로 돌아감
+		batchNumber = (batchNumber%3 + 1)
+
+		// 새로운 batch 번호로 rotate 함수 실행
+		rotate(batchNumber)
+	}
+
 }
