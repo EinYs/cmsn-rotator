@@ -149,7 +149,7 @@ func main() {
 
 // 특정 시간 간격마다 작업을 실행하도록 하는 함수
 func scheduleRotations() {
-	ticker := time.NewTicker(8 * time.Second)
+	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
 
 	// for t := range ticker.C {
