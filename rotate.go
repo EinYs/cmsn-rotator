@@ -149,14 +149,8 @@ func main() {
 
 // 특정 시간 간격마다 작업을 실행하도록 하는 함수
 func scheduleRotations() {
-	ticker := time.NewTicker(1 * time.Hour)
+	ticker := time.NewTicker(3 * time.Hour)
 	defer ticker.Stop()
-
-	// for t := range ticker.C {
-	// 	jobID := int((t.Unix()/10)%3 + 1) // 1, 2, 3 중 하나의 작업 ID 선택
-	// 	log.Printf("🔔 Triggering rotation job %d at %v\n", jobID, t)
-	// 	rotate(jobID)
-	// }
 
 	for range ticker.C {
 
