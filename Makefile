@@ -54,3 +54,13 @@ push: checkdiff ## Push docker image to ecr repo.
 
 all: checkdiff login build push ## All publish process.
 
+run: 
+	@. ./.env.sh && \
+	if [ -f .last_run ]; then \
+		LAST_RUN=$$(cat .last_run); \
+		NEXT_RUN=$$((LAST_RUN + 1)); \
+	else \
+		NEXT_RUN=1; \
+	fi && \
+	echo $$NEXT_RUN > .last_run && \
+	go run ./arg $$NEXT_RUN
