@@ -149,30 +149,18 @@ func main() {
 
 // 특정 시간 간격마다 작업을 실행하도록 하는 함수
 func scheduleRotations() {
-	ticker := time.NewTicker(3 * time.Hour)
+
+	hours := 3
+	ticker := time.NewTicker(time.Duration(hours) * time.Hour)
 	defer ticker.Stop()
 
+	batchNumber := 1
+
+	// log
+	log.Printf("📃 Initial batch number: %d", batchNumber)
+	log.Printf("🕒 Scheduled rotation every %d hours.", hours)
+
 	for range ticker.C {
-
-		// 현재 active: true인 batch 번호를 database에서 가져옴
-		var token *Token
-		collection := dbClient.Database("twitter").Collection("tokens")
-		err := collection.FindOne(context.Background(), bson.M{"active": true}).Decode(&token)
-
-		if err != nil {
-			log.Fatalf("Failed to get current batch number: %v", err)
-		}
-
-		batchNumber := token.Batch
-
-		// check null
-		if batchNumber == 0 {
-			log.Printf("❌ Failed to get current batch number: %v", err)
-		}
-
-		if batchNumber < 1 {
-			log.Printf("❌ Invalid batch number: %d", batchNumber)
-		}
 
 		log.Printf("📃 Current batch number: %d", batchNumber)
 

@@ -54,13 +54,20 @@ push: checkdiff ## Push docker image to ecr repo.
 
 all: checkdiff login build push ## All publish process.
 
-run: 
-	@. ./.env.sh && \
-	if [ -f .last_run ]; then \
-		LAST_RUN=$$(cat .last_run); \
-		NEXT_RUN=$$((LAST_RUN + 1)); \
-	else \
-		NEXT_RUN=1; \
-	fi && \
-	echo $$NEXT_RUN > .last_run && \
-	go run ./arg $$NEXT_RUN
+# run: 
+# 	@. ./.env.sh && \
+# 	if [ -f .last_run ]; then \
+# 		LAST_RUN=$$(cat .last_run); \
+# 		NEXT_RUN=$$((LAST_RUN % 3 + 1)); \
+# 	else \
+# 		NEXT_RUN=1; \
+# 	fi && \
+# 	echo $$NEXT_RUN > .last_run && \
+# 	/usr/local/go/bin/go run ./arg $$NEXT_RUN
+
+run:
+	@if [ ! -f .env ]; then \
+		echo "⚠️  .env 파일이 없습니다. .env.example을 참고해서 만들어주세요."; \
+		exit 1; \
+	fi
+	docker-compose up --build

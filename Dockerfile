@@ -8,6 +8,9 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Set the environment variables
+ARG DATABASE_URI
+
 # Copy the entire project directory to the container
 COPY . .
 
