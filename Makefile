@@ -70,4 +70,4 @@ run:
 		echo "⚠️  .env 파일이 없습니다. .env.example을 참고해서 만들어주세요."; \
 		exit 1; \
 	fi
-	docker-compose up --build
+	docker compose up --build -d
